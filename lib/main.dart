@@ -80,7 +80,15 @@ class MyAppState extends State<MyApp> {
                 color: Colors.white,
               );
             else if (snapshot.connectionState==ConnectionState.done && snapshot.data==true)
-              return UpdateAppScreen();
+             // return UpdateAppScreen();
+              return Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.white,
+                  child:
+
+                  SplashScreen(token)
+              );
             else
               return Container(
                   width: double.infinity,
@@ -101,7 +109,7 @@ class MyAppState extends State<MyApp> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    disableScreenshot();
+    //disableScreenshot();
 
   }
 

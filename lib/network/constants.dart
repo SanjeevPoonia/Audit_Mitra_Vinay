@@ -2,7 +2,7 @@
 class AppConstant
 {
   // Staging server
-  static String appBaseURL='https://auditmitra.qdegrees.com/api/';
+  static String appBaseURL='https://auditmitr.qdegrees.com/api/';
  //static String appBaseURL='https://rbluat.qdegrees.com/api/';
   static String webURL='https://rbluat.qdegrees.com/';
   //static String appBaseURL='https://demo-porter.qaviews.com/api/';

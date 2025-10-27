@@ -101,19 +101,19 @@ class AuditFormState extends State<AuditDetailsScreen> {
   List<dynamic> managerList = [];
   List<dynamic> filterManagerList = [];
   List<String> auditCycleListAsString = [];
-
   List<dynamic> auditCycleList = [];
-
   List<dynamic> agencyList = [];
   List<dynamic> filteredAgencyList = [];
-
   List<dynamic> productList = [];
   List<String> productListAsString = [];
-
-  List<String> answerList = ["Satisfactory", "Unsatisfactory"];
-
+  String satisTitle = "Satisfactory";
+  String unsetTitle = "Unsatisfactory";
+  String naTitle = "N/A";
+  String criticalTitle = "Critical";
+  String pwdTitle = "PWD";
+  String percentageTitle = "Percentage";
+  List<String> answerList = ["Satisfactory", "Unsatisfactory","N/A","Critical","PWD","Percentage"];
   List<String> lobListAsString = [];
-
   List<dynamic> lobList = [];
 
   String? selectedLOB;
@@ -133,6 +133,17 @@ class AuditFormState extends State<AuditDetailsScreen> {
   List<String> selectedLevel5Drop=[];
   List<String> level4ListAsString=[];
   List<String> level5ListAsString=[];
+
+
+  List<resultSeries> resultList=[];
+  String finalScorable="";
+  String finalScore="";
+  String finalPercentage="";
+  String finalGradeToShow="";
+
+
+  String current_showing="";
+
   @override
   Widget build(BuildContext context) {
     ToastContext().init(context);
@@ -1168,14 +1179,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                                                         physics: NeverScrollableScrollPhysics(),
                                                                         scrollDirection: Axis.vertical,
                                                                         itemBuilder: (BuildContext context, int index) {
-                                                                          /*  answerListFinal[pos]["subs"].add(
-                                                              {
 
-                                                                "id":questionList[pos]["subparameter"][index]["id"].toString(),
-
-
-                                                              }
-                                                            );*/
 
                                                                           return Column(
                                                                             crossAxisAlignment:
@@ -1438,7 +1442,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                           ),
                           SizedBox(height: 5),
                           ListView.builder(
-                              itemCount: questionList.length,
+                              itemCount: resultList.length,
                               physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
                               padding: EdgeInsets.zero,
@@ -1456,7 +1460,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                           Container(
                                             width: 130,
                                             child: Text(
-                                                questionList[pos]["parameter"],
+                                                resultList[pos].paramName,
                                                 style: TextStyle(
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.w500,
@@ -1468,8 +1472,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                               Expanded(
                                                   child: Center(
                                                     child: Text(
-                                                        scorableList[pos]
-                                                            .toString(),
+                                                        resultList[pos].scorable,
                                                         style: TextStyle(
                                                             fontSize: 13,
                                                             fontWeight:
@@ -1480,8 +1483,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                               Expanded(
                                                   child: Center(
                                                     child: Text(
-                                                        scoredList[pos]
-                                                            .toString(),
+                                                        resultList[pos].score,
                                                         style: TextStyle(
                                                             fontSize: 13,
                                                             fontWeight:
@@ -1493,18 +1495,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                                   child: Center(
                                                     child: Text(
 
-                                              scorableList[pos]==0 && scoredList[pos]==0?
-
-                                                  "0%":
-
-
-
-
-
-                                                        scoreInPercentage[pos]
-                                                                .toStringAsFixed(
-                                                                    2) +
-                                                            "%",
+                                                        "${resultList[pos].percentage}%",
                                                         style: TextStyle(
                                                             fontSize: 13,
                                                             fontWeight:
@@ -1517,7 +1508,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                         ],
                                       ),
                                     ),
-                                    pos == questionList.length - 1
+                                    pos == resultList.length - 1
                                         ? Container()
                                         : Container(
                                             child: Divider(),
@@ -1548,11 +1539,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                     Expanded(
                                         child: Center(
                                           child: Text(
-                                              scorableList.length == 0
-                                                  ? ""
-                                                  : scorableList
-                                                      .reduce((a, b) => a + b)
-                                                      .toString(),
+                                              finalScorable,
                                               style: TextStyle(
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.w600,
@@ -1562,11 +1549,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                     Expanded(
                                         child: Center(
                                           child: Text(
-                                              scoredList.length == 0
-                                                  ? ""
-                                                  : scoredList
-                                                      .reduce((a, b) => a + b)
-                                                      .toString(),
+                                              finalScore,
                                               style: TextStyle(
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.w600,
@@ -1576,23 +1559,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                     Expanded(
                                         child: Center(
                                           child: Text(
-                                              scorableList.length == 0
-                                                  ? ""
-                                                  : scorableList.reduce(
-                                                              (a, b) => a + b) ==
-                                                          0
-                                                      ? "0.00%"
-                                                      : (scoredList.reduce(
-                                                                      (a, b) =>
-                                                                          a + b) *
-                                                                  100 /
-                                                                  scorableList
-                                                                      .reduce((a,
-                                                                              b) =>
-                                                                          a + b))
-                                                              .toStringAsFixed(
-                                                                  2) +
-                                                          "%",
+                                                          "$finalPercentage%",
                                               style: TextStyle(
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.w600,
@@ -1618,7 +1585,7 @@ class AuditFormState extends State<AuditDetailsScreen> {
                                       color: Colors.white,
                                     )),
                                 Spacer(),
-                                Text(finalGrade,
+                                Text(finalGradeToShow,
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -1728,7 +1695,6 @@ class AuditFormState extends State<AuditDetailsScreen> {
       ),
     );
   }
-
   checkValidations(String methodType) {
     if (selectedAgencyIndex == 9999) {
       Toast.show("Please select a Agency",
@@ -1798,12 +1764,6 @@ class AuditFormState extends State<AuditDetailsScreen> {
 
     }
   }
-
-
-
-
-
-
   @override
   void initState() {
     // TODO: implement initState
@@ -1811,8 +1771,6 @@ class AuditFormState extends State<AuditDetailsScreen> {
     checkInternet();
 
   }
-
-
   checkInternet() async {
     final List<ConnectivityResult> connectivityResult =
         await (Connectivity().checkConnectivity());
@@ -1824,20 +1782,10 @@ class AuditFormState extends State<AuditDetailsScreen> {
     } else {
       hasInternet = true;
       setState(() {});
-
-
       viewAuditData(context);
-
-
-
-   /*   fetchAgencies();
-      fetchAuditCycleList();
-      fetchUserList();*/
+      getResultFromServer();
     }
   }
-
-
-
   fetchAgencies(String agencyID) async {
     if (agencyList.length != 0) {
       agencyList.clear();
@@ -1874,16 +1822,6 @@ class AuditFormState extends State<AuditDetailsScreen> {
 
     setState(() {});
   }
-
-
-
-
-
-
-
-
-
-
   fetchAgencyDetails() async {
     APIDialog.showAlertDialog(context, "Please wait...");
     var requestModel = {
@@ -2003,10 +1941,6 @@ class AuditFormState extends State<AuditDetailsScreen> {
     selectedManagers = List<bool>.filled(managerList.length, false);
     setState(() {});
   }*/
-
-
-
-
   fetchQuestions() async {
     setState(() {
       isLoading = true;
@@ -2036,9 +1970,6 @@ class AuditFormState extends State<AuditDetailsScreen> {
     print(responseJSON);
     setState(() {});
   }
-
-
-
   fetchAuditCycleList(String selectedAuditID) async {
     var requestModel = {};
     ApiBaseHelper helper = ApiBaseHelper();
@@ -2062,7 +1993,6 @@ class AuditFormState extends State<AuditDetailsScreen> {
     print(responseJSON);
     setState(() {});
   }
-
   fetchUserList() async {
     ApiBaseHelper helper = ApiBaseHelper();
     var response = await helper.get('formet_user_list', context);
@@ -2081,8 +2011,6 @@ class AuditFormState extends State<AuditDetailsScreen> {
     selectedlevel3 = levelByUserList[0].toString();
     setState(() {});
   }
-
-
   viewAuditData(BuildContext context) async {
     setState(() {
       isLoading=true;
@@ -2187,8 +2115,6 @@ class AuditFormState extends State<AuditDetailsScreen> {
     });
 
   }
-
-
   fetchUserListEdit(String? level3ID,String? level4ID,String? level5ID) async {
     ApiBaseHelper helper = ApiBaseHelper();
     var response = await helper.get('formet_user_list', context);
@@ -2306,4 +2232,54 @@ class AuditFormState extends State<AuditDetailsScreen> {
     setState(() {});
   }
 
+  getResultFromServer() async {
+    APIDialog.showAlertDialog(context, "Please wait.Calculating Score ...");
+    var requestModel = {
+      "audit_id": widget.auditID,
+
+    };
+    print("Request Model $requestModel");
+    ApiBaseHelper helper = ApiBaseHelper();
+    var response = await helper.postAPIWithHeader(
+        'get_audit_parameter_result', requestModel, context);
+    Navigator.pop(context);
+    var responseJSON = json.decode(response.body);
+    print(responseJSON);
+    if (responseJSON['status'].toString() == "1") {
+
+      List<dynamic> data=responseJSON['data'];
+      finalScorable=responseJSON['final_score']['final_scorable']?.toString()??"0";
+      finalScore=responseJSON['final_score']['final_scored']?.toString()??"0";
+      finalPercentage=responseJSON['final_score']['final_score_per']?.toString()??"0";
+      finalGradeToShow=responseJSON['final_score']['grade']?.toString()??"N/A";
+      resultList.clear();
+      for(int i=0;i<data.length;i++){
+        String paramName=data[i]['parameter_name']?.toString()??"N/A";
+        String scorable=data[i]['scorable']?.toString()??"0";
+        String score=data[i]['score']?.toString()??"0";
+        String percentage=data[i]['score_per']?.toString()??"0";
+        resultList.add(resultSeries(paramName, scorable, score, percentage ));
+      }
+
+
+     setState(() {
+
+     });
+
+    } else {
+      Toast.show(responseJSON['message'],
+          duration: Toast.lengthLong,
+          gravity: Toast.bottom,
+          backgroundColor: Colors.red);
+    }
+  }
+
+}
+class resultSeries{
+  String paramName;
+  String scorable;
+  String score;
+  String percentage;
+
+  resultSeries(this.paramName, this.scorable, this.score, this.percentage);
 }

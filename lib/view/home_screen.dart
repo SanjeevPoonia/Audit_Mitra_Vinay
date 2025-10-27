@@ -10,6 +10,7 @@ import 'package:qaudit_tata_flutter/network/loader.dart';
 import 'package:qaudit_tata_flutter/utils/app_modal.dart';
 import 'package:qaudit_tata_flutter/utils/app_theme.dart';
 import 'package:qaudit_tata_flutter/view/audit_form_screen.dart';
+import 'package:qaudit_tata_flutter/view/audit_newform_screen.dart';
 import 'package:qaudit_tata_flutter/view/zoom_scaffold.dart' as MEN;
 
 import 'package:provider/provider.dart';
@@ -191,7 +192,8 @@ class LandingState extends State<HomeScreen> with TickerProviderStateMixin
                                                 ))),
                                         onPressed: () async{
 
-                                          Navigator.push(context,MaterialPageRoute(builder: (context)=>AuditFormScreen(auditList[pos]["id"].toString(),{},auditList[pos]["name"],false,"","")));
+                                          Navigator.push(context,MaterialPageRoute(builder: (context)=>AuditNewFormScreen(auditList[pos]["id"].toString(),{},auditList[pos]["name"],false,"","")));
+                                          //Navigator.push(context,MaterialPageRoute(builder: (context)=>AuditFormScreen(auditList[pos]["id"].toString(),{},auditList[pos]["name"],false,"","")));
 
 
 
@@ -254,10 +256,8 @@ class LandingState extends State<HomeScreen> with TickerProviderStateMixin
 
   checkInternet()async{
     final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
-
     if(connectivityResult.contains(ConnectivityResult.none))
     {
-
       fetchLocalData();
     }
     else

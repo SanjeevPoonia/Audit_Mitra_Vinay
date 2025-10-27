@@ -86,7 +86,6 @@ class ApiBaseHelper {
     }
     return responseJson;
   }
-
   Future<dynamic> postAPI(
       String url, var apiParams, BuildContext context) async {
     print(_baseUrl+url+'  API CALLED');

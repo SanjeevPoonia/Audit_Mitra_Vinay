@@ -33,7 +33,7 @@ class SubmitAuditState extends State<SubmitAuditListScreen> with TickerProviderS
   List<dynamic> arrSubmitAuditList=[];
   @override
   Widget build(BuildContext context) {
-
+    ToastContext().init(context);
     return SafeArea(
       child: Scaffold(
         body:  Column(
@@ -99,9 +99,9 @@ class SubmitAuditState extends State<SubmitAuditListScreen> with TickerProviderS
 
                             GestureDetector(
                               onTap:(){
-                          String auditID=arrSubmitAuditList[pos]["audit_id"].toString();
-                          print("Hello $auditID");
-                        //  Navigator.push(context,MaterialPageRoute(builder: (context)=>AuditDetailsScreen(auditID)));
+                              String auditID=arrSubmitAuditList[pos]["audit_id"].toString();
+                              print("Hello $auditID");
+                              Navigator.push(context,MaterialPageRoute(builder: (context)=>AuditDetailsScreen(auditID)));
                         },
                               child: Card(
                                 color: Colors.white,
@@ -359,25 +359,21 @@ class SubmitAuditState extends State<SubmitAuditListScreen> with TickerProviderS
     ApiBaseHelper helper = ApiBaseHelper();
     var response = await helper.postAPIWithHeader('submittedAuditList', data, context);
     var responseJSON = json.decode(response.body);
-    arrSubmitAuditList = responseJSON['data'];
-    print(responseJSON);
-/*    if (responseJSON['status'] == 1) {
-      Toast.show(responseJSON['message'],
+    if(responseJSON['data']!=null){
+      arrSubmitAuditList = responseJSON['data'];
+    }else{
+      Toast.show("Something went wrong! Please try again later",
           duration: Toast.lengthLong,
           gravity: Toast.bottom,
-          backgroundColor: Colors.green);
+          backgroundColor: Colors.red
+      );
+    }
 
-    } else {
-      Toast.show(responseJSON['message'],
-          duration: Toast.lengthLong,
-          gravity: Toast.bottom,
-          backgroundColor: Colors.red);
-    }*/
+    print(responseJSON);
+
     setState(() {
       isLoading=false;
     });
-
-    // completedAuditList=responseJSON["data"];
     setState(() {
 
     });

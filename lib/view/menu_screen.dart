@@ -555,7 +555,9 @@ class MenuState extends State<MenuScreen> {
 
 
     setState(() {
-      profileImageUrl=responseJSON["data"]["avatar_url"].toString();
+      if(responseJSON["data"]["avatar_url"]!=null) {
+        profileImageUrl = responseJSON["data"]["avatar_url"].toString();
+      }
     });
   }
 }

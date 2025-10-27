@@ -7,6 +7,7 @@ import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:qaudit_tata_flutter/utils/app_theme.dart';
 import 'package:qaudit_tata_flutter/view/audit_form_screen.dart';
+import 'package:qaudit_tata_flutter/view/audit_newform_screen.dart';
 import 'package:qaudit_tata_flutter/view/edit_audit_form_screen.dart';
 import 'package:qaudit_tata_flutter/view/zoom_scaffold.dart' as MEN;
 
@@ -33,12 +34,11 @@ class SavedAuditState extends State<SavedAuditListScreen> with TickerProviderSta
   List<dynamic> arrSavedAuditList=[];
   @override
   Widget build(BuildContext context) {
-
+    ToastContext().init(context);
     return SafeArea(
       child: Scaffold(
         body: Column(
           children: [
-
             Card(
               elevation: 4,
               margin: EdgeInsets.only(bottom: 10),
@@ -70,7 +70,6 @@ class SavedAuditState extends State<SavedAuditListScreen> with TickerProviderSta
                 ),
               ),
             ),
-
             Expanded(
                 child:
                 isLoading?
@@ -272,7 +271,8 @@ class SavedAuditState extends State<SavedAuditListScreen> with TickerProviderSta
                                       children: [
                                         Expanded(child: InkWell(
                                           onTap: () {
-                                            Navigator.push(context,MaterialPageRoute(builder: (context)=>AuditFormScreen(arrSavedAuditList[pos]["qm_sheet_id"].toString(),{},"Collection | Agency",true,arrSavedAuditList[pos]["audit_id"].toString(),"")));
+                                            //Navigator.push(context,MaterialPageRoute(builder: (context)=>AuditFormScreen(arrSavedAuditList[pos]["qm_sheet_id"].toString(),{},"Collection | Agency",true,arrSavedAuditList[pos]["audit_id"].toString(),"")));
+                                            Navigator.push(context,MaterialPageRoute(builder: (context)=>AuditNewFormScreen(arrSavedAuditList[pos]["qm_sheet_id"].toString(),{},"Collection | Agency",true,arrSavedAuditList[pos]["audit_id"].toString(),""))).then((_){getDataFromServer();});
 
                                           },
                                           child: Container(
@@ -323,11 +323,8 @@ class SavedAuditState extends State<SavedAuditListScreen> with TickerProviderSta
 
                   ),
                 ))
-
           ],
         ),
-
-
       ),
     );
   }
@@ -344,6 +341,10 @@ class SavedAuditState extends State<SavedAuditListScreen> with TickerProviderSta
   void initState() {
     // TODO: implement initState
     super.initState();
+    getDataFromServer();
+  }
+
+  getDataFromServer(){
     savedAuditList(context);
   }
 
@@ -358,7 +359,16 @@ class SavedAuditState extends State<SavedAuditListScreen> with TickerProviderSta
     ApiBaseHelper helper = ApiBaseHelper();
     var response = await helper.postAPIWithHeader('savedAuditList', data, context);
     var responseJSON = json.decode(response.body);
-    arrSavedAuditList = responseJSON['data'];
+    if(responseJSON['data']!=null){
+      arrSavedAuditList = responseJSON['data'];
+    }else{
+      Toast.show("Something went wrong! Please try again later",
+          duration: Toast.lengthLong,
+          gravity: Toast.bottom,
+          backgroundColor: Colors.red
+      );
+    }
+
     setState(() {
       isLoading=false;
     });
