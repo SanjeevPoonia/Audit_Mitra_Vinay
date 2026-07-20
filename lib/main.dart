@@ -36,14 +36,9 @@ Future<void> main() async {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     statusBarColor: Colors.black,
   ));
-
   await Firebase.initializeApp();
-
-
   runApp( MyApp(token.toString()));
 }
-
-
 class MyApp extends StatefulWidget
 {
   final String token;
@@ -80,22 +75,21 @@ class MyAppState extends State<MyApp> {
                 color: Colors.white,
               );
             else if (snapshot.connectionState==ConnectionState.done && snapshot.data==true)
-             // return UpdateAppScreen();
-              return Container(
+              return UpdateAppScreen();
+              /*return Container(
                   width: double.infinity,
                   height: double.infinity,
                   color: Colors.white,
                   child:
 
                   SplashScreen(token)
-              );
+              );*/
             else
               return Container(
                   width: double.infinity,
                   height: double.infinity,
                   color: Colors.white,
                   child:
-
                   SplashScreen(token)
               );
             // return main screen here
@@ -104,20 +98,14 @@ class MyAppState extends State<MyApp> {
       ),
     );
   }
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    //disableScreenshot();
-
   }
-
   disableScreenshot() async {
     bool result = await _noScreenshot.screenshotOff();
     debugPrint('Screenshot Off: $result');
   }
-
   Future<bool>checkUpdateRequired(BuildContext context) async {
     bool updateRequired=false;
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -141,6 +129,7 @@ class MyAppState extends State<MyApp> {
     print('SERVER VERSION');
     print(remoteConfig.getString('android_version'));
     print(remoteConfig.getString('ios_version'));
+    print("Audit Mitr version"+remoteConfig.getString('auditmitr_android_version'));
 
     String versionName;
     if(Platform.isIOS)
@@ -149,7 +138,7 @@ class MyAppState extends State<MyApp> {
     }
     else
     {
-      versionName=remoteConfig.getString('android_version');
+      versionName=remoteConfig.getString('auditmitr_android_version');
     }
     print('sfwfwf');
 
@@ -157,8 +146,6 @@ class MyAppState extends State<MyApp> {
 
     int userAppVersion = getExtendedVersionNumber(version); // return 10020003
     int storeAppVersion = getExtendedVersionNumber(versionName); // return 10020011
-
-
     if(userAppVersion<storeAppVersion)
     {
       print('UPDATE FOUND');
@@ -171,15 +158,12 @@ class MyAppState extends State<MyApp> {
     }
     return updateRequired;
   }
-
-
   int getExtendedVersionNumber(String version) {
     List versionCells = version.split('.');
     versionCells = versionCells.map((i) => int.parse(i)).toList();
     return versionCells[0] * 100000 + versionCells[1] * 1000 + versionCells[2];
   }
 }
-
 class MyHttpOverrides extends HttpOverrides{
   @override
   HttpClient createHttpClient(SecurityContext? context){

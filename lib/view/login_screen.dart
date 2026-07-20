@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:qaudit_tata_flutter/utils/app_theme.dart';
 import 'package:qaudit_tata_flutter/view/all_dashboard/client_home_screen.dart';
 import 'package:qaudit_tata_flutter/view/home_screen.dart';
+import 'package:qaudit_tata_flutter/view/sunstone_module/qa_home_screen_sunstone.dart';
 
 import 'package:qaudit_tata_flutter/widgets/input_field_widget.dart';
 import 'package:toast/toast.dart';
@@ -275,27 +276,27 @@ class LoginState extends State<LoginScreen> {
       MyUtils.saveSharedPreferences('name', responseJSON['name']);
       MyUtils.saveSharedPreferences('email', responseJSON['email']);
       MyUtils.saveSharedPreferences('role', responseJSON['user_role']);
+      MyUtils.saveSharedPreferences('user_id', responseJSON["user_id"].toString());
+      MyUtils.saveSharedPreferences('client_id', responseJSON["client_id"].toString());
 
-      MyUtils.saveSharedPreferences(
-          'user_id', responseJSON["user_id"].toString());
+      print("Client Id : ${responseJSON["client_id"].toString()}");
+
       AppModel.setTokenValue(responseJSON["auth_key"]);
       AppModel.setUserID(responseJSON["user_id"].toString());
-
       if(responseJSON["user_role"]=="Client"){
-
         Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => ClientHomeScreen()),
                 (Route<dynamic> route) => false);
-
-      }
-      else
+      } else if(responseJSON["client_id"].toString()=="288" || responseJSON["client_id"].toString()=="298")  // For SunStone Client
         {
           Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => QAHomeScreen()),
+              MaterialPageRoute(builder: (context) => QAHomeScreenSunStone()),
                   (Route<dynamic> route) => false);
+        }else  {
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => QAHomeScreen()),
+                (Route<dynamic> route) => false);
         }
-
-
     }
 
     else if(responseJSON.toString().contains("{message: Attempt to read property"))
@@ -423,7 +424,6 @@ class LoginState extends State<LoginScreen> {
       }),
     );
   }
-
   void _submitHandler22() async {
     if (!_formKeyChangePassword.currentState!.validate()) {
       return;

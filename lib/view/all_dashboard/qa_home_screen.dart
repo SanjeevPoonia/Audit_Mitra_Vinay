@@ -1,39 +1,24 @@
-
 import 'dart:convert';
-
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:intl/intl.dart';
-import 'package:qaudit_tata_flutter/network/api_dialog.dart';
 import 'package:qaudit_tata_flutter/network/api_helper.dart';
 import 'package:qaudit_tata_flutter/network/loader.dart';
 import 'package:qaudit_tata_flutter/utils/app_modal.dart';
 import 'package:qaudit_tata_flutter/utils/app_theme.dart';
-import 'package:qaudit_tata_flutter/view/all_dashboard/client_home_screen.dart';
-import 'package:qaudit_tata_flutter/view/assigned_audit_details.dart';
-import 'package:qaudit_tata_flutter/view/assigned_audit_list.dart';
-import 'package:qaudit_tata_flutter/view/audit_form_screen.dart';
-import 'package:qaudit_tata_flutter/view/home_screen.dart';
 import 'package:qaudit_tata_flutter/view/menu_screen.dart';
-import 'package:qaudit_tata_flutter/view/saved_audit_list.dart';
-import 'package:qaudit_tata_flutter/view/submit_audit_list.dart';
 import 'package:qaudit_tata_flutter/view/zoom_scaffold.dart' as MEN;
-
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
-
 import '../../network/Utils.dart';
 import '../../widgets/dashboard_widget.dart';
 class QAHomeScreen extends StatefulWidget
 {
   LandingState createState()=>LandingState();
 }
-
 class LandingState extends State<QAHomeScreen> with TickerProviderStateMixin
 {
   int selectedIndex = 0;
@@ -56,16 +41,12 @@ class LandingState extends State<QAHomeScreen> with TickerProviderStateMixin
     "Custom Date"
   ];
   String selectedFilter = "Current Month";
-
   String assignedAuditsCount="0";
   String pendingAuditsCount="0";
   String submittedAuditsCount="0";
   String savedAuditsCount="0";
-
-
   @override
   Widget build(BuildContext context) {
-
     return SafeArea(
       child:ChangeNotifierProvider(
         create: (context) => menuController,
@@ -77,19 +58,12 @@ class LandingState extends State<QAHomeScreen> with TickerProviderStateMixin
           contentScreen: MEN.Layout(
               contentBuilder: (cc) => Column(
                 children: [
-
                   SizedBox(height:20),
-
-                 Expanded(child:
-
+                  Expanded(child:
                      isLoading?
-
                          Center(
                            child: Loader(),
                          ):
-
-
-
                  Container(
                    color: Colors.white,
                    child: RefreshIndicator(
@@ -550,10 +524,6 @@ class LandingState extends State<QAHomeScreen> with TickerProviderStateMixin
                      ),
                    ),
                  ))
-
-
-
-
                 ],
               )),
         ),
@@ -576,14 +546,11 @@ class LandingState extends State<QAHomeScreen> with TickerProviderStateMixin
 
   checkInternet()async{
     final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
-
     if(connectivityResult.contains(ConnectivityResult.none))
     {
-
     }
     else
       {
-
         fetchDashboardData(false);
       }
   }

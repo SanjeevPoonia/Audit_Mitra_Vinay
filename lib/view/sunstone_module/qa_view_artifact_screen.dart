@@ -19,14 +19,15 @@ import 'package:qaudit_tata_flutter/view/image_view_screen.dart';
 import 'package:qaudit_tata_flutter/view/upload_artifact_screen.dart';
 import 'package:toast/toast.dart';
 
-class ViewArtifactScreen extends StatefulWidget
+class QaViewArtifactScreen extends StatefulWidget
 {
-  final String sheetID,paramID,subParamID,tempAuditID;
-  ViewArtifactScreen(this.sheetID,this.paramID,this.subParamID,this.tempAuditID);
+  final String sheetID,paramID,subParamID,tempAuditID,paramIndex;
+  var selectedLocationFilter;
+  QaViewArtifactScreen(this.sheetID,this.paramID,this.subParamID,this.tempAuditID,this.paramIndex,this.selectedLocationFilter);
   ArtifactState createState()=>ArtifactState();
 }
 
-class ArtifactState extends State<ViewArtifactScreen>
+class ArtifactState extends State<QaViewArtifactScreen>
 {
   List<dynamic> imageList=[];
   bool isLoading=false;
@@ -138,14 +139,14 @@ class ArtifactState extends State<ViewArtifactScreen>
 
 
 
-@override
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
     if(widget.tempAuditID!="")
-      {
-        fetchArtifacts();
-      }
+    {
+      fetchArtifacts();
+    }
     else
     {
       fetchLocalData();
@@ -163,13 +164,32 @@ class ArtifactState extends State<ViewArtifactScreen>
     var requestModel = {
       "sheet_id": widget.sheetID,
       "parameter_id": widget.paramID,
+      "parameter_index":widget.paramIndex,
       "sub_parameter_id": widget.subParamID,
-      "audit_id":widget.tempAuditID
+      "audit_id":widget.tempAuditID,
     };
+    [
+      "location",
+      "campus_type",
+      "brand",
+      "pillar",
+      "touch_point",
+    ].forEach((key) {
+
+      final value =
+      widget.selectedLocationFilter[key];
+
+      if ((value ?? "")
+          .toString()
+          .trim()
+          .isNotEmpty) {
+        requestModel[key] = value;
+      }
+    });
     print(requestModel);
     ApiBaseHelper helper = ApiBaseHelper();
     var response =
-    await helper.postAPIWithHeader('artifactsList', requestModel, context);
+    await helper.postAPIWithHeader('v2/artifactsList', requestModel, context);
     setState(() {
       isLoading = false;
     });
@@ -191,7 +211,7 @@ class ArtifactState extends State<ViewArtifactScreen>
 
     ApiBaseHelper helper = ApiBaseHelper();
     var response =
-    await helper.postAPIWithHeader('deleteArtifact', requestModel, context);
+    await helper.postAPIWithHeader('v2/deleteArtifact', requestModel, context);
 
     Navigator.pop(context);
 
@@ -202,10 +222,10 @@ class ArtifactState extends State<ViewArtifactScreen>
           gravity: Toast.bottom,
           backgroundColor: Colors.green);
 
-     imageList.removeAt(pos);
-     setState(() {
+      imageList.removeAt(pos);
+      setState(() {
 
-     });
+      });
     } else {
       Toast.show(responseJSON['message'],
           duration: Toast.lengthLong,
@@ -221,12 +241,12 @@ class ArtifactState extends State<ViewArtifactScreen>
     List<dynamic> imageData=AppModel.rebuttalData;
 
     for(int i=0;i<imageData.length;i++)
+    {
+      if(imageData[i]["sheet_id"]==widget.sheetID && imageData[i]["parameter_id"]==widget.paramID && imageData[i]["sub_parameter_id"]==widget.subParamID)
       {
-        if(imageData[i]["sheet_id"]==widget.sheetID && imageData[i]["parameter_id"]==widget.paramID && imageData[i]["sub_parameter_id"]==widget.subParamID)
-          {
-            imageList.add(imageData[i]);
-          }
+        imageList.add(imageData[i]);
       }
+    }
 
 
 

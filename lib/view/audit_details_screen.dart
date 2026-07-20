@@ -2053,7 +2053,10 @@ class AuditFormState extends State<AuditDetailsScreen> {
         {
            totalScorer=totalScorer+int.parse(questionList[i]["subparameter"][j]["weight"].toString());
            print("Total Scoredd "+totalScored.toString());
-           totalScored=totalScored+int.parse(questionList[i]["subparameter"][j]["score"].toString());
+           if(questionList[i]["subparameter"][j]["score"]!=null && questionList[i]["subparameter"][j]["score"].toString().isNotEmpty && questionList[i]["subparameter"][j]["score"].toString()!="N/A"){
+             totalScored=totalScored+int.parse(questionList[i]["subparameter"][j]["score"].toString());
+           }
+
            controllerList[i][j].text=questionList[i]["subparameter"][j]["remark"].toString();
 
            dropdownSelectionList[i][j]=questionList[i]["subparameter"][j]["option_selected"];

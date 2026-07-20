@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:qaudit_tata_flutter/network/Utils.dart';
 import 'package:qaudit_tata_flutter/view/home_screen.dart';
+import 'package:qaudit_tata_flutter/view/sunstone_module/qa_home_screen_sunstone.dart';
 
 
 import 'all_dashboard/client_home_screen.dart';
@@ -27,7 +28,6 @@ class SplashState extends State<SplashScreen>
       body: Center(
         child: Container(
           padding: EdgeInsets.all(30),
-
           decoration: const BoxDecoration(
             image: DecorationImage(
               image: AssetImage('assets/splash_logo.png'),
@@ -42,15 +42,13 @@ class SplashState extends State<SplashScreen>
   void initState() {
     super.initState();
     _navigateUser();
-
   }
-
   _navigateUser() async { 
     if(widget.token!='')
       {
-
         String? userRole=await MyUtils.getSharedPreferences("role");
-
+        String? clientId= await MyUtils.getSharedPreferences("client_id")??"";
+        print("Client Id = $clientId");
         if(userRole=="Client")
           {
             Timer(
@@ -60,17 +58,19 @@ class SplashState extends State<SplashScreen>
           }
         else
           {
-            Timer(
-                Duration(seconds: 2),
-                    () => Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => QAHomeScreen())));
+            if(clientId=="288" || clientId=="298"){   //  client id 288 is for SunStones
+              Timer(
+                  Duration(seconds: 2),
+                      () => Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (BuildContext context) => QAHomeScreenSunStone())));
+            }else{
+              Timer(
+                  Duration(seconds: 2),
+                      () => Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (BuildContext context) => QAHomeScreen())));
+            }
+
           }
-
-
-
-
-
-
       }
     else
       {

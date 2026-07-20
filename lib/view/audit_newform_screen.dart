@@ -184,6 +184,13 @@ class _auditFormState extends State<AuditNewFormScreen> {
   int allocatedModuleLevels = 13;
   bool isLevelShow = false;
 
+  int allocatedModuleRewriteRemark=25;
+  bool isShowRewriteRemark=false;
+
+  int allocatedModuleCategoryWiseResult=26;
+  bool isShowCategoryWiseResult=false;
+
+
   Timer? _timer;
 
   List<String> otpQuestionIds = [];
@@ -191,13 +198,25 @@ class _auditFormState extends State<AuditNewFormScreen> {
   List<selectedPreviousOptions> previousIssueSelectedList=[];
 
   List<resultSeries> resultList=[];
+  List<categroryResult> categoryResultList=[];
   String finalScorable="";
   String finalScore="";
   String finalPercentage="";
   String finalGradeToShow="";
 
+  String totalCategoryWeight="0";
+  String totalWeightedScore="0";
+  String overallCategoryScorePer="";
+
 
   String current_showing="";
+  bool isVirtualAudit = false;
+  int allocatedVirtualModule=21;
+  bool showVirtualAudit=false;
+
+
+  List<List<String?>> errorDropdownSelectionList = [];
+  List<List<List<dynamic>>> errorScoringList = [];
 
 
 
@@ -354,6 +373,9 @@ class _auditFormState extends State<AuditNewFormScreen> {
 
     print(responseJSON.toString());
 
+    errorDropdownSelectionList.clear();
+    errorScoringList.clear();
+
     auditDetails = responseJSON["data"]["audit_details"];
     parameterDetails = responseJSON["data"]["sheet_details"];
     questionList = responseJSON["data"]["sheet_details"]["parameter"];
@@ -381,15 +403,34 @@ class _auditFormState extends State<AuditNewFormScreen> {
             col, (index) => TextEditingController()));
 
     for (int i = 0; i < questionList.length; i++) {
-      print("LOOP COUNT" + i.toString());
+
+      List<String?> innerSelection = [];
+      List<List<dynamic>> innerErrorList = [];
+      List subParams = questionList[i]["subparameter"] ?? [];
+      for (int j = 0; j < subParams.length; j++) {
+        innerSelection.add(null);
+        if (subParams[j]["error_scoring"] != null) {
+          innerErrorList.add(jsonDecode(subParams[j]["error_scoring"],),);
+        } else {
+          innerErrorList.add([]);
+        }
+      }
+      errorDropdownSelectionList.add(
+        innerSelection,
+      );
+      errorScoringList.add(
+        innerErrorList,
+      );
+    }
+
+    for (int i = 0; i < questionList.length; i++) {
 
       for (int j = 0; j < questionList[i]["subparameter"].length; j++) {
 
         if(questionList[i]["subparameter"][j]["weight"]!=null && questionList[i]["subparameter"][j]["weight"].toString().isNotEmpty){
           totalScorer = totalScorer + int.parse(questionList[i]["subparameter"][j]["weight"].toString());
         }
-        print("Total Scoredd " + totalScored.toString());
-        if(questionList[i]["subparameter"][j]["score"]!=null && questionList[i]["subparameter"][j]["score"].toString().isNotEmpty){
+        if(questionList[i]["subparameter"][j]["score"]!=null && questionList[i]["subparameter"][j]["score"].toString().isNotEmpty && questionList[i]["subparameter"][j]["score"].toString()!="N/A"){
           totalScored = totalScored + int.parse(questionList[i]["subparameter"][j]["score"].toString());
         }
 
@@ -402,13 +443,20 @@ class _auditFormState extends State<AuditNewFormScreen> {
           controllerList[i][j].text = "NA";
         }
 
-        print("selected Drop Down Value : ${questionList[i]["subparameter"][j]["option_selected"]}");
+
         if(questionList[i]["subparameter"][j]["option_selected"].toString().isNotEmpty){
           dropdownSelectionList[i][j] = questionList[i]["subparameter"][j]["option_selected"];
         }
-        print("selected Drop Down Weigth : ${questionList[i]["subparameter"][j]["score"]}");
+
         if(questionList[i]["subparameter"][j]["score"].toString().isNotEmpty){
           weightList[i][j] = questionList[i]["subparameter"][j]["score"].toString();
+        }
+        if (questionList[i]["subparameter"][j]["error_count"] != null) {
+
+          errorDropdownSelectionList[i][j] =
+              questionList[i]["subparameter"][j]
+              ["error_count"]
+                  .toString();
         }
 
 
@@ -451,6 +499,15 @@ class _auditFormState extends State<AuditNewFormScreen> {
     latLongController.text = auditDetails["latitude"].toString() +
         " , " +
         auditDetails["longitude"].toString();
+
+    print("*********${auditDetails['virtual_audit']}");
+
+    int virtualAudit=auditDetails['virtual_audit']??0;
+
+    isVirtualAudit=virtualAudit==1?true:false;
+
+
+
 
     String? level3ID = auditDetails["lavel_3"].toString();
     String? level4ID = auditDetails["lavel_4"].toString();
@@ -806,12 +863,12 @@ class _auditFormState extends State<AuditNewFormScreen> {
                       SizedBox(height: 12),
                       widget.isEdit
                           ? TextFieldWidgetNew(
-                              "Agency Manager",
+                              "Agency Owner",
                               enabled: false,
                               "-",
                               agencyManagerNameController)
-                          : TextFieldWidgetNew("Agency Manager",
-                              "Enter Manager", agencyManagerNameController),
+                          : TextFieldWidgetNew("Agency Owner",
+                              "Enter Owner", agencyManagerNameController),
                       SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.only(left: 12),
@@ -947,6 +1004,82 @@ class _auditFormState extends State<AuditNewFormScreen> {
                             "Geo tag", "Tap here", latLongController,
                             enabled: false),
                       ),
+                      SizedBox(height: 12,),
+                      showVirtualAudit?Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 5,
+                        ),
+
+                        decoration: BoxDecoration(
+
+                          color: Colors.white,
+
+                          borderRadius: BorderRadius.circular(16),
+
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                          ),
+
+                          boxShadow: [
+
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+
+                        child: Row(
+
+                          children: [
+
+                            Transform.scale(
+
+                              scale: 1.1,
+
+                              child: Checkbox(
+
+                                value: isVirtualAudit,
+
+                                activeColor: const Color(0xFF4F46E5),
+
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+
+                                onChanged: (value) {
+
+                                  setState(() {
+
+                                    isVirtualAudit = value ?? false;
+
+                                  });
+                                },
+                              ),
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            const Expanded(
+
+                              child: Text(
+
+                                "Virtual Audit",
+
+                                style: TextStyle(
+
+                                  fontSize: 15,
+
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ):SizedBox(),
                       SizedBox(height: 12),
                       isLevelShow
                           ? Column(
@@ -1595,6 +1728,113 @@ class _auditFormState extends State<AuditNewFormScreen> {
                                           ),
                                         ],
                                       ),
+                                      const SizedBox(height: 10,),
+                                      questionList[pos][
+                                      "subparameter"]
+                                      [index][
+                                      "use_error_count"] ==
+                                          1 &&
+                                          dropdownSelectionList[
+                                          pos]
+                                          [index] ==
+                                              unsetTitle
+
+                                          ? Padding(
+
+                                        padding:
+                                        const EdgeInsets
+                                            .only(
+                                            top: 14),
+
+                                        child:
+                                        Container(
+
+                                          padding:
+                                          const EdgeInsets
+                                              .symmetric(
+                                            horizontal:
+                                            14,
+                                          ),
+
+                                          decoration:
+                                          BoxDecoration(
+
+                                            color:
+                                            Colors
+                                                .white,
+
+                                            borderRadius:
+                                            BorderRadius
+                                                .circular(
+                                                16),
+
+                                            border:
+                                            Border.all(
+                                              color: const Color(
+                                                  0xFFE5E7EB),
+                                            ),
+                                          ),
+
+                                          child:
+                                          DropdownButtonHideUnderline(
+
+                                            child:
+                                            DropdownButton<String>(
+
+                                              isExpanded:
+                                              true,
+
+                                              hint:
+                                              const Text(
+                                                "Select Error Count",
+                                              ),
+
+                                              value:
+                                              errorDropdownSelectionList[
+                                              pos]
+                                              [index],
+
+                                              items:
+                                              errorScoringList[pos]
+                                              [index]
+                                                  .map<
+                                                  DropdownMenuItem<
+                                                      String>>(
+                                                    (
+                                                    e) {
+
+                                                  return DropdownMenuItem<
+                                                      String>(
+
+                                                    value:
+                                                    e["error_count"]
+                                                        .toString(),
+
+                                                    child:
+                                                    Text(
+                                                      "Error Count : ${e["error_count"]} | Score : ${e["score"]}",
+                                                    ),
+                                                  );
+                                                },
+                                              ).toList(),
+
+                                              onChanged:
+                                                  (value) {
+
+                                                errorDropdownSelectionList[
+                                                pos]
+                                                [index] =
+                                                    value;
+
+                                                setState(
+                                                        () {});
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      )
+
+                                          : const SizedBox(),
                                       const SizedBox(height: 10),
                                       previousRemark.isNotEmpty
                                           ? Padding(
@@ -1821,6 +2061,51 @@ class _auditFormState extends State<AuditNewFormScreen> {
                                             controller: controllerList[pos]
                                             [index]),
                                       ),
+                                      isShowRewriteRemark?Align(alignment: AlignmentGeometry.centerRight,child: ElevatedButton(
+                                        style: ButtonStyle(
+                                            foregroundColor:
+                                            MaterialStateProperty
+                                                .all<Color>(
+                                                Colors
+                                                    .black),
+                                            // background
+                                            backgroundColor:
+                                            MaterialStateProperty
+                                                .all<Color>(Color(
+                                                0xFFFAE1D0)),
+                                            // fore
+                                            shape: MaterialStateProperty.all<
+                                                RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                                  borderRadius:
+                                                  BorderRadius
+                                                      .circular(
+                                                      6.0),
+                                                ))),
+                                        onPressed: () {
+                                          String remark=controllerList[pos][index].text;
+                                          print("Remark enterted   $remark");
+                                          if(remark.trim().isEmpty){
+                                            Toast.show("Please Enter Your remark First",backgroundColor: Colors.red,duration: Toast.lengthLong);
+                                          }else{
+                                            fetchRewriteRemark(pos, index, remark);
+                                          }
+
+
+                                        },
+                                        child: const Text(
+                                          'Rewrite Remark',
+                                          style: TextStyle(
+                                            fontSize: 15.5,
+                                            fontWeight:
+                                            FontWeight.w500,
+                                            color: Colors.black,
+                                          ),
+                                          textAlign:
+                                          TextAlign.center,
+                                        ),
+                                      ),):SizedBox(),
+
                                       SizedBox(height: 15),
                                       Row(
                                         children: [
@@ -2218,6 +2503,113 @@ class _auditFormState extends State<AuditNewFormScreen> {
                                           ),
                                         ],
                                       ),
+                                      const SizedBox(height: 10,),
+                                      questionList[pos][
+                                      "qm_sheet_sub_parameter"]
+                                      [index][
+                                      "use_error_count"] ==
+                                          1 &&
+                                          dropdownSelectionList[
+                                          pos]
+                                          [index] ==
+                                              unsetTitle
+
+                                          ? Padding(
+
+                                        padding:
+                                        const EdgeInsets
+                                            .only(
+                                            top: 14),
+
+                                        child:
+                                        Container(
+
+                                          padding:
+                                          const EdgeInsets
+                                              .symmetric(
+                                            horizontal:
+                                            14,
+                                          ),
+
+                                          decoration:
+                                          BoxDecoration(
+
+                                            color:
+                                            Colors
+                                                .white,
+
+                                            borderRadius:
+                                            BorderRadius
+                                                .circular(
+                                                16),
+
+                                            border:
+                                            Border.all(
+                                              color: const Color(
+                                                  0xFFE5E7EB),
+                                            ),
+                                          ),
+
+                                          child:
+                                          DropdownButtonHideUnderline(
+
+                                            child:
+                                            DropdownButton<String>(
+
+                                              isExpanded:
+                                              true,
+
+                                              hint:
+                                              const Text(
+                                                "Select Error Count",
+                                              ),
+
+                                              value:
+                                              errorDropdownSelectionList[
+                                              pos]
+                                              [index],
+
+                                              items:
+                                              errorScoringList[pos]
+                                              [index]
+                                                  .map<
+                                                  DropdownMenuItem<
+                                                      String>>(
+                                                    (
+                                                    e) {
+
+                                                  return DropdownMenuItem<
+                                                      String>(
+
+                                                    value:
+                                                    e["error_count"]
+                                                        .toString(),
+
+                                                    child:
+                                                    Text(
+                                                      "Error Count : ${e["error_count"]} | Score : ${e["score"]}",
+                                                    ),
+                                                  );
+                                                },
+                                              ).toList(),
+
+                                              onChanged:
+                                                  (value) {
+
+                                                errorDropdownSelectionList[
+                                                pos]
+                                                [index] =
+                                                    value;
+
+                                                setState(
+                                                        () {});
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      )
+
+                                          : const SizedBox(),
                                       SizedBox(height: 10),
                                       previousRemark.isNotEmpty
                                           ? Padding(
@@ -2447,6 +2839,50 @@ class _auditFormState extends State<AuditNewFormScreen> {
                                             controller: controllerList[pos]
                                             [index]),
                                       ),
+                                      isShowRewriteRemark?Align(alignment: AlignmentGeometry.centerRight,child: ElevatedButton(
+                                        style: ButtonStyle(
+                                            foregroundColor:
+                                            MaterialStateProperty
+                                                .all<Color>(
+                                                Colors
+                                                    .black),
+                                            // background
+                                            backgroundColor:
+                                            MaterialStateProperty
+                                                .all<Color>(Color(
+                                                0xFFFAE1D0)),
+                                            // fore
+                                            shape: MaterialStateProperty.all<
+                                                RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                                  borderRadius:
+                                                  BorderRadius
+                                                      .circular(
+                                                      6.0),
+                                                ))),
+                                        onPressed: () {
+                                          String remark=controllerList[pos][index].text;
+                                          print("Remark enterted   $remark");
+                                          if(remark.trim().isEmpty){
+                                            Toast.show("Please Enter Your remark First",backgroundColor: Colors.red,duration: Toast.lengthLong);
+                                          }else{
+                                            fetchRewriteRemark(pos, index, remark);
+                                          }
+
+
+                                        },
+                                        child: const Text(
+                                          'Rewrite Remark',
+                                          style: TextStyle(
+                                            fontSize: 15.5,
+                                            fontWeight:
+                                            FontWeight.w500,
+                                            color: Colors.black,
+                                          ),
+                                          textAlign:
+                                          TextAlign.center,
+                                        ),
+                                      ),):SizedBox(),
                                       SizedBox(height: 15),
                                       Row(
                                         children: [
@@ -2885,6 +3321,189 @@ class _auditFormState extends State<AuditNewFormScreen> {
             ],
           ),
         ),
+
+        SizedBox(height: 10,),
+        isShowCategoryWiseResult && categoryResultList.isNotEmpty ? Container(
+          height: 43,
+          margin: EdgeInsets.symmetric(horizontal: 10),
+          color: AppTheme.themeColor,
+          child: Row(
+            children: [
+              SizedBox(width: 10),
+              Text("Final Result - Category Wise Scorecard",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  )),
+            ],
+          ),
+        ):SizedBox(),
+        isShowCategoryWiseResult && categoryResultList.isNotEmpty ?Container(
+          margin: EdgeInsets.symmetric(horizontal: 10),
+          padding: EdgeInsets.symmetric(horizontal: 5),
+          height: 36,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2),
+              color: Color(0xFF21317D).withOpacity(0.58)),
+          child: Row(
+            children: [
+              Container(
+                width: 130,
+                child: Text("Category",
+                    style: TextStyle(fontSize: 12, color: Colors.white)),
+              ),
+              Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: Center(
+                            child: Text("Scorable(Weight)",
+                                style:
+                                TextStyle(fontSize: 12, color: Colors.white)),
+                          ),
+                          flex: 1),
+                      Expanded(
+                          child: Center(
+                            child: Text("Scored",
+                                style:
+                                TextStyle(fontSize: 12, color: Colors.white)),
+                          ),
+                          flex: 1),
+                      Expanded(
+                          child: Center(
+                            child: Text("Score%",
+                                style:
+                                TextStyle(fontSize: 12, color: Colors.white)),
+                          ),
+                          flex: 1),
+                    ],
+                  ))
+            ],
+          ),
+        ):SizedBox(),
+        isShowCategoryWiseResult && categoryResultList.isNotEmpty ?SizedBox(height: 5):SizedBox(),
+        isShowCategoryWiseResult && categoryResultList.isNotEmpty ?ListView.builder(
+            itemCount: categoryResultList.length,
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            itemBuilder: (BuildContext context, int pos) {
+
+              return Column(
+                children: [
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 10),
+                    padding: EdgeInsets.symmetric(horizontal: 5),
+                    height: 36,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 130,
+                          child: Text(categoryResultList[pos].categoryName,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF21317D))),
+                        ),
+                        Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                    child: Center(
+                                      child: Text(categoryResultList[pos].totalScorable,
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black)),
+                                    ),
+                                    flex: 1),
+                                Expanded(
+                                    child: Center(
+                                      child: Text(categoryResultList[pos].totalScore,
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black)),
+                                    ),
+                                    flex: 1),
+                                Expanded(
+                                    child: Center(
+                                      child: Text(
+                                          "${categoryResultList[pos].scorePer}%",
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black)),
+                                    ),
+                                    flex: 1),
+                              ],
+                            ))
+                      ],
+                    ),
+                  ),
+                  pos == categoryResultList.length - 1
+                      ? Container()
+                      : Container(
+                      child: Divider(),
+                      margin: EdgeInsets.symmetric(horizontal: 14))
+                ],
+              );
+            }):SizedBox(),
+        isShowCategoryWiseResult && categoryResultList.isNotEmpty ?SizedBox(height: 7):SizedBox(),
+        isShowCategoryWiseResult && categoryResultList.isNotEmpty ?Container(
+          color: Color(0xFF21317D).withOpacity(0.58),
+          margin: EdgeInsets.symmetric(horizontal: 10),
+          padding: EdgeInsets.symmetric(horizontal: 5),
+          height: 36,
+          child: Row(
+            children: [
+              Container(
+                width: 130,
+                child: Text("Over All(Category)",
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+              ),
+              Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: Center(
+                            child: Text(
+                                totalCategoryWeight,
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white)),
+                          ),
+                          flex: 1),
+                      Expanded(
+                          child: Center(
+                            child: Text(
+                                totalWeightedScore,
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white)),
+                          ),
+                          flex: 1),
+                      Expanded(
+                          child: Center(
+                            child: Text(
+                                "$overallCategoryScorePer%",
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white)),
+                          ),
+                          flex: 1),
+                    ],
+                  ))
+            ],
+          ),
+        ):SizedBox(),
         SizedBox(height: 26),
         Card(
           elevation: 3,
@@ -3659,6 +4278,29 @@ class _auditFormState extends State<AuditNewFormScreen> {
     filteredCityList = responseJSON["data"]["cities"];*/
     questionList = responseJSON["data"]["data"]["parameter"];
 
+    errorDropdownSelectionList.clear();
+    errorScoringList.clear();
+    for (int i = 0; i < questionList.length; i++) {
+
+      List<String?> innerSelection = [];
+      List<List<dynamic>> innerErrorList = [];
+      List subParams = questionList[i]["qm_sheet_sub_parameter"] ?? [];
+      for (int j = 0; j < subParams.length; j++) {
+        innerSelection.add(null);
+        if (subParams[j]["error_scoring"] != null) {
+          innerErrorList.add(jsonDecode(subParams[j]["error_scoring"],),);
+        } else {
+          innerErrorList.add([]);
+        }
+      }
+      errorDropdownSelectionList.add(
+        innerSelection,
+      );
+      errorScoringList.add(
+        innerErrorList,
+      );
+    }
+
     for (int i = 0; i < questionList.length; i++) {
       print("LOOP COUNT" + i.toString());
       scorableList.add(0);
@@ -3818,6 +4460,12 @@ class _auditFormState extends State<AuditNewFormScreen> {
           isOTPRequired = true;
         } else if (key == allocatedModuleLevels) {
           isLevelShow = true;
+        }else if (key == allocatedVirtualModule){
+          showVirtualAudit=true;
+        }else if (key == allocatedModuleRewriteRemark){
+          isShowRewriteRemark=true;
+        }else if (key == allocatedModuleCategoryWiseResult){
+          isShowCategoryWiseResult=true;
         }
       }
 
@@ -3870,8 +4518,8 @@ class _auditFormState extends State<AuditNewFormScreen> {
       return validation;
     }
     if (selectedlevel1 != null) {
-      bool allSelected = !selectedLevel4Drop.contains(null) &&
-          !selectedLevel5Drop.contains(null);
+      //bool allSelected = !selectedLevel4Drop.contains(null);
+      bool allSelected = !selectedLevel4Drop.contains(null) && !selectedLevel5Drop.contains(null);
       if (!allSelected) {
         Toast.show("Please select all levels before continuing",
             duration: Toast.lengthLong,
@@ -3952,6 +4600,7 @@ class _auditFormState extends State<AuditNewFormScreen> {
     String selectedSubproductId = selectedSubProductIDsAsString.join(",");
 
     var requestModels = {
+      "is_virtual_audit":isVirtualAudit?1:0,
       "lat_long": latLongController.text.toString(),
       "qm_sheet_id": widget.sheetID,
       "audit_cycle_id": auditCycleID,
@@ -3973,6 +4622,7 @@ class _auditFormState extends State<AuditNewFormScreen> {
       "lavel_5": level5IDs,
     };
     var requestModelEdit = {
+      "is_virtual_audit":isVirtualAudit?1:0,
       "audit_id": AuditIdReal,
       "lat_long": latLongController.text.toString(),
       "qm_sheet_id": widget.sheetID,
@@ -4156,6 +4806,7 @@ class _auditFormState extends State<AuditNewFormScreen> {
       }
     }
     var requestModel = {
+      "is_virtual_audit":isVirtualAudit?1:0,
       "agency_email": selectedEmail,
       "user_id": AppModel.userID,
       "agency_id": agencySearchController.text.toString().length == 0
@@ -4518,6 +5169,7 @@ class _auditFormState extends State<AuditNewFormScreen> {
     }
 
     var requestModel = {
+      "is_virtual_audit":isVirtualAudit?1:0,
       "agency_email": selectedEmail,
       "user_id": AppModel.userID,
       "agency_id": agencySearchController.text.toString().length == 0
@@ -4864,7 +5516,6 @@ class _auditFormState extends State<AuditNewFormScreen> {
         methodType == "save" ? "Saving Audit..." : "Submitting Audit...");
 
     print(selectedLevel4Drop.toString());
-    print(selectedLevel5Drop.toString());
     print(level4IDs.toString());
     print(level5IDs.toString());
     log(level4UserList.toString());
@@ -5263,6 +5914,10 @@ class _auditFormState extends State<AuditNewFormScreen> {
               backgroundColor: Colors.red);
           flag = false;
           break outerLoop;
+        }else if(dropdownSelectionList[i][j] == unsetTitle && questionList[i]["subparameter"][j]["use_error_count"] ==1 && errorDropdownSelectionList[i][j] ==null){
+          Toast.show("Select error count", backgroundColor: Colors.red, duration: Toast.lengthLong, gravity: Toast.bottom,);
+          flag = false;
+          break outerLoop;
         }
       }
     } else {
@@ -5295,6 +5950,10 @@ class _auditFormState extends State<AuditNewFormScreen> {
               backgroundColor: Colors.red);
           flag = false;
           break outerLoop;
+        }else if(dropdownSelectionList[i][j] == unsetTitle && questionList[i]["qm_sheet_sub_parameter"][j]["use_error_count"] ==1 && errorDropdownSelectionList[i][j] ==null){
+          Toast.show("Select error count", backgroundColor: Colors.red, duration: Toast.lengthLong, gravity: Toast.bottom,);
+          flag = false;
+          break outerLoop;
         }
       }
     }
@@ -5317,9 +5976,24 @@ class _auditFormState extends State<AuditNewFormScreen> {
       for (int j = 0; j < questionList[i]["subparameter"].length; j++) {
           String score="";
           String slectOption="";
+          String selectedErrorCount = "";
+          String selectedErrorScore = "";
           if(dropdownSelectionList[i][j]==naTitle){
               score= naTitle;
               slectOption= naTitle;
+          }else if(dropdownSelectionList[i][j]==unsetTitle && questionList[i]["subparameter"][j]["use_error_count"] == 1){
+            selectedErrorCount = errorDropdownSelectionList[i][j]?.toString() ?? "";
+            if(selectedErrorCount.isNotEmpty){
+              List errorList = errorScoringList[i][j];
+              int selectedIndex =
+              errorList.indexWhere((e)=> e["error_count"].toString() == selectedErrorCount);
+
+              if(selectedIndex!=-1){
+                selectedErrorScore= errorList[selectedIndex]["score"].toString();
+                score= selectedErrorScore;
+                slectOption=selectedErrorScore;
+              }
+            }
           }else{
             score= weightList[i][j];
             slectOption=weightList[i][j];
@@ -5334,6 +6008,8 @@ class _auditFormState extends State<AuditNewFormScreen> {
           "selected_option": score,
           "score": slectOption,
           "remark": controllerList[i][j].text,
+          "error_count": selectedErrorCount,
+          "error_score": selectedErrorScore,
           "is_critical": "0",
           "is_percentage": "0",
           "selected_per": "",
@@ -5347,11 +6023,29 @@ class _auditFormState extends State<AuditNewFormScreen> {
           j < questionList[i]["qm_sheet_sub_parameter"].length;
           j++) {
 
+
         String score="";
         String slectOption="";
+
+        String selectedErrorCount = "";
+        String selectedErrorScore = "";
+
         if(dropdownSelectionList[i][j]==naTitle){
           score= naTitle;
           slectOption= naTitle;
+        }else if(dropdownSelectionList[i][j]==unsetTitle && questionList[i]["qm_sheet_sub_parameter"][j]["use_error_count"] == 1){
+          selectedErrorCount = errorDropdownSelectionList[i][j]?.toString() ?? "";
+          if(selectedErrorCount.isNotEmpty){
+            List errorList = errorScoringList[i][j];
+            int selectedIndex =
+            errorList.indexWhere((e)=> e["error_count"].toString() == selectedErrorCount);
+
+            if(selectedIndex!=-1){
+              selectedErrorScore= errorList[selectedIndex]["score"].toString();
+              score= selectedErrorScore;
+              slectOption=selectedErrorScore;
+            }
+          }
         }else{
           score= weightList[i][j];
           slectOption=weightList[i][j];
@@ -5365,6 +6059,8 @@ class _auditFormState extends State<AuditNewFormScreen> {
           "selected_option": score,
           "score": slectOption,
           "remark": controllerList[i][j].text,
+          "error_count": selectedErrorCount,
+          "error_score": selectedErrorScore,
           "is_critical": "0",
           "is_percentage": "0",
           "selected_per": "",
@@ -5514,6 +6210,7 @@ class _auditFormState extends State<AuditNewFormScreen> {
       finalPercentage=responseJSON['final_score']['final_score_per']?.toString()??"0";
       finalGradeToShow=responseJSON['final_score']['grade']?.toString()??"N/A";
       resultList.clear();
+      categoryResultList.clear();
       for(int i=0;i<data.length;i++){
         String paramName=data[i]['parameter_name']?.toString()??"N/A";
         String scorable=data[i]['scorable']?.toString()??"0";
@@ -5521,6 +6218,21 @@ class _auditFormState extends State<AuditNewFormScreen> {
         String percentage=data[i]['score_per']?.toString()??"0";
         resultList.add(resultSeries(paramName, scorable, score, percentage ));
       }
+
+      List<dynamic> catList = responseJSON['category_wise_result'] is List ? List<dynamic>.from(responseJSON['category_wise_result'],) : [];
+      for(int i=0;i<catList.length;i++){
+        String category=catList[i]['category']?.toString()??"";
+        String category_weight=catList[i]['category_weight']?.toString()??"";
+        String score_per=catList[i]['score_per']?.toString()??"";
+        String total_scorable=catList[i]['total_scorable']?.toString()??"";
+        String total_score=catList[i]['total_score']?.toString()??"";
+        String weighted_score=catList[i]['weighted_score']?.toString()??"";
+        categoryResultList.add(categroryResult(category, category_weight, total_scorable, total_score, score_per, weighted_score));
+      }
+
+      totalCategoryWeight=responseJSON['category_overall_result']?['total_category_weight']?.toString()??"0";
+      totalWeightedScore=responseJSON['category_overall_result']?['total_weighted_score']?.toString()??"0";
+      overallCategoryScorePer=responseJSON['category_overall_result']?['overall_category_score_per']?.toString()??"0";
 
 
       showResultLayoutFunction();
@@ -5761,6 +6473,31 @@ class _auditFormState extends State<AuditNewFormScreen> {
       },
     );
   }
+  fetchRewriteRemark(int mainPos,int subPos,String remark) async {
+    APIDialog.showAlertDialog(context, "Please wait ...");
+    var requestModel = {
+      "remark": remark,
+    };
+    print("Request Model $requestModel");
+    ApiBaseHelper helper = ApiBaseHelper();
+    var response = await helper.postAPIWithHeader(
+        'rewrite-remark', requestModel, context);
+    Navigator.pop(context);
+    var responseJSON = json.decode(response.body);
+    print(responseJSON);
+    if (responseJSON['status'].toString() == "1") {
+      String rewritten=responseJSON['rewritten']?.toString()??remark;
+      controllerList[mainPos][subPos].text=rewritten;
+      setState(() {});
+    } else {
+      Toast.show(responseJSON['message'],
+          duration: Toast.lengthLong,
+          gravity: Toast.bottom,
+          backgroundColor: Colors.red);
+    }
+  }
+
+
 }
 
 class previousRemark {
@@ -5774,7 +6511,6 @@ class previousRemark {
   previousRemark(this.paramId, this.subParamId, this.observation, this.remark,
       this.artifact, this.prevRemarkQuestList);
 }
-
 class previousRemarkQuestions {
   String remarkQuestId;
   String remarkQuestText;
@@ -5796,6 +6532,16 @@ class resultSeries{
   String scorable;
   String score;
   String percentage;
-
   resultSeries(this.paramName, this.scorable, this.score, this.percentage);
+}
+class categroryResult{
+  String categoryName;
+  String categoryWeight;
+  String totalScorable;
+  String totalScore;
+  String scorePer;
+  String weightedScore;
+
+  categroryResult(this.categoryName, this.categoryWeight, this.totalScorable,
+      this.totalScore, this.scorePer, this.weightedScore);
 }

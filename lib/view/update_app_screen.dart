@@ -51,7 +51,7 @@ class UpdateAppState extends State<UpdateAppScreen>
                             const SizedBox(height: 15),
 
                             const Text(
-                              'A new version of Audit Mitra is available on store, please update your app ',
+                              'A new version of Audit Mitr is available on store, please update your app ',
                               style: TextStyle(
                                   fontWeight: FontWeight.w500, fontSize: 15),
                             ),
@@ -81,7 +81,7 @@ class UpdateAppState extends State<UpdateAppScreen>
                                     if(Platform.isAndroid)
                                       {
                                         launchUrl(
-                                          Uri.parse('https://play.google.com/store/apps/details?id=com.qaudit.rbl'),
+                                          Uri.parse('https://play.google.com/store/apps/details?id=com.qdegrees.auditmitr'),
                                           mode: LaunchMode.externalApplication,
                                         );
                                       }
